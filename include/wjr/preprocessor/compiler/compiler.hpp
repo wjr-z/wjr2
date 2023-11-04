@@ -1,7 +1,6 @@
 #ifndef WJR_PREPROCESSOR_COMPILER_COMPILER_H__
 #define WJR_PREPROCESSOR_COMPILER_COMPILER_H__
 
-#include <wjr/preprocessor/compiler/has.hpp>
 #include <wjr/preprocessor/compiler/arch.hpp>
 
 #if defined(__clang__)

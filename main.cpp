@@ -24,7 +24,7 @@
 #define BOOST_PP_NOT_EQUAL_1(c, y) WJR_PP_BOOL_IF(c, NIF, y(1, NIF))
 
 #define WJR_PP_GET_FUNC(FUNC)                                                            \
-    WJR_PP_GET_FUNC_I(WJR_PP_EXPAND(WJR_PP_FUNC_TABLE_##FUNC), FUNC)
+    WJR_PP_GET_FUNC_I(WJR_PP_FUNC_TABLE_##FUNC, FUNC)
 #define WJR_PP_GET_FUNC_I(HOLDER, FUNC, ...) (HOLDER), (FUNC), (__VA_ARGS__)
 
 #define WJR_PP_GET_2(HOLDER, FUNC, ...) FUNC

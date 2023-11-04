@@ -240,8 +240,9 @@
                    WJR_ASSERT_CHECK_I_MESSAGE)                                           \
     (__VA_ARGS__)
 
-#define WJR_ASSERT_UNCHECK_I(...)                                                        \
+#define WJR_ASSERT_UNCHECK_I(expr, ...)                                                  \
     do {                                                                                 \
+        WJR_ASSUME(expr);                                                                \
     } while (0)
 
 #define WJR_ASSERT(level, ...)                                                           \
