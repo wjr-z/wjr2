@@ -6,7 +6,7 @@
 #define WJR_PP_BOOL_IF_I0(t, f) f
 #define WJR_PP_BOOL_IF_I1(t, f) t
 
-#define WJR_PP_BOOL_NOT(x) WJR_PP_BOOL_IF(cond, 0, 1)
+#define WJR_PP_BOOL_NOT(x) WJR_PP_BOOL_IF(x, 0, 1)
 
 #define WJR_PP_BOOL_AND(x, y) WJR_PP_BOOL_IF(x, WJR_PP_BOOL_IF(y, 1, 0), 0)
 #define WJR_PP_BOOL_OR(x, y) WJR_PP_BOOL_IF(x, 1, WJR_PP_BOOL_IF(y, 1, 0))

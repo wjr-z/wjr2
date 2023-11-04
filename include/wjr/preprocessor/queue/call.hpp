@@ -14,7 +14,7 @@
     (WJR_PP_QUEUE_FRONT(args), WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_POP_FRONT(args)))
 
 #define WJR_PP_QUEUE_CALL_NEW_ARGS_EQ(args, ops)                               \
-    WJR_PP_QUEUE_INIT(WJR_PP_QUEUE_CALL_GEN(args, ops))
+    (WJR_PP_QUEUE_CALL_GEN(args, ops))
 
 #define WJR_PP_QUEUE_CALL_NEW_ARGS_NE(args, ops)                               \
     WJR_PP_QUEUE_PUSH_FRONT(                                                   \

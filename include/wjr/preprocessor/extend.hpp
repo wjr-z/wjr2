@@ -4,6 +4,7 @@
 // testing ...
 
 #include <cassert>
+#include <stdlib.h>
 
 #include <wjr/preprocessor/arithmatic.hpp>
 #include <wjr/preprocessor/compiler.hpp>
@@ -19,7 +20,7 @@
 #endif
 
 #define WJR_PP_QUEUE_INIT_N(x, N) WJR_PP_QUEUE_INIT_N_I(x, N)
-#define WJR_PP_QUEUE_INIT_N_I(x, N) WJR_PP_QUEUE_INIT(WJR_PP_REPEAT(x, N))
+#define WJR_PP_QUEUE_INIT_N_I(x, N) (WJR_PP_REPEAT(x, N))
 
 #define WJR_PP_QUEUE_CALL_SAME(args, op)                                                 \
     WJR_PP_QUEUE_CALL(args, WJR_PP_QUEUE_INIT_N(op, WJR_PP_QUEUE_SIZE(args)))
@@ -33,8 +34,8 @@
 // ops : WJR_PP_QUEUE_PUSH_BACK(x, f(y)/g(y)/ ...)
 // gen a result queue at first of queue
 #define WJR_PP_QUEUE_GENERATE(queue, ops)                                                \
-    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(                                           \
-        WJR_PP_QUEUE_CALL(WJR_PP_QUEUE_PUSH_FRONT(queue, WJR_PP_QUEUE_INIT(0)), ops)))
+    WJR_PP_QUEUE_POP_FRONT(                                                              \
+        WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL(WJR_PP_QUEUE_PUSH_FRONT(queue, (0)), ops)))
 
 #define WJR_PP_QUEUE_GENERATE_SAME(queue, op)                                            \
     WJR_PP_QUEUE_GENERATE(queue, WJR_PP_QUEUE_INIT_N(op, WJR_PP_QUEUE_SIZE(queue)))
@@ -48,13 +49,12 @@
 #define WJR_PP_QUEUE_POP_FRONT_N_CALLER(x, y) y
 
 #define WJR_PP_QUEUE_POP_BACK_N(queue, N)                                                \
-    WJR_PP_QUEUE_GENERATE(                                                               \
-        queue,                                                                           \
-        WJR_PP_QUEUE_POP_FRONT_N(                                                        \
-            WJR_PP_QUEUE_INIT(WJR_PP_REPEAT(WJR_PP_QUEUE_POP_BACK_N_HEADER_CALLER,       \
-                                            WJR_PP_QUEUE_SIZE(queue)),                   \
-                              WJR_PP_REPEAT(WJR_PP_QUEUE_POP_BACK_N_TAILER_CALLER, N)),  \
-            N))
+    WJR_PP_QUEUE_GENERATE(queue,                                                         \
+                          WJR_PP_QUEUE_POP_FRONT_N(                                      \
+                              (WJR_PP_REPEAT(WJR_PP_QUEUE_POP_BACK_N_HEADER_CALLER,      \
+                                             WJR_PP_QUEUE_SIZE(queue)),                  \
+                               WJR_PP_REPEAT(WJR_PP_QUEUE_POP_BACK_N_TAILER_CALLER, N)), \
+                              N))
 #define WJR_PP_QUEUE_POP_BACK_N_HEADER_CALLER(x, y) WJR_PP_QUEUE_PUSH_BACK(x, y)
 #define WJR_PP_QUEUE_POP_BACK_N_TAILER_CALLER(x, y) x
 
@@ -63,9 +63,8 @@
 #define WJR_PP_QUEUE_AT(queue, N) WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_POP_FRONT(queue, N))
 
 #define WJR_PP_QUEUE_REVERSE(queue)                                                      \
-    WJR_PP_QUEUE_POP_BACK(WJR_PP_QUEUE_FRONT(                                            \
-        WJR_PP_QUEUE_CALL_SAME(WJR_PP_QUEUE_PUSH_FRONT(queue, WJR_PP_QUEUE_INIT(0)),     \
-                               WJR_PP_QUEUE_REVERSE_CALLER)))
+    WJR_PP_QUEUE_POP_BACK(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_SAME(                     \
+        WJR_PP_QUEUE_PUSH_FRONT(queue, (0)), WJR_PP_QUEUE_REVERSE_CALLER)))
 #define WJR_PP_QUEUE_REVERSE_CALLER(x, y) WJR_PP_QUEUE_PUSH_FRONT(x, y)
 
 // (a, b, c) -> (a b c)
@@ -82,96 +81,162 @@
 
 // (A, B, C) (x, y, z) -> ((A, x), (B, y), (C, z))
 #define WJR_PP_QUEUE_ZIP_2(queue1, queue2)                                               \
-    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(                                           \
-        WJR_PP_QUEUE_CALL_N_SAME(WJR_PP_QUEUE_INIT(WJR_PP_QUEUE_INIT(queue1), queue2),   \
-                                 WJR_PP_QUEUE_ZIP_2_CALLER, WJR_PP_QUEUE_SIZE(queue1))))
+    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_N_SAME(                  \
+        ((queue1), queue2), WJR_PP_QUEUE_ZIP_2_CALLER, WJR_PP_QUEUE_SIZE(queue1))))
 
 #define WJR_PP_QUEUE_ZIP_2_CALLER(x, y)                                                  \
     WJR_PP_QUEUE_PUSH_FRONT(                                                             \
         WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_PUSH_BACK(                                   \
-            x, WJR_PP_QUEUE_INIT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_FRONT(x)),              \
-                                 WJR_PP_QUEUE_FRONT(y)))),                               \
+            x, (WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_FRONT(x)), WJR_PP_QUEUE_FRONT(y)))),     \
         WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(x))),                                  \
         WJR_PP_QUEUE_POP_FRONT(y)
 
 // ((A), (B), (C)) (x, y, z) -> ((A, x), (B, y), (C, z))
 #define WJR_PP_QUEUE_ZIP_MORE(queue1, queue2)                                            \
     WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_N_SAME(                  \
-        WJR_PP_QUEUE_INIT(WJR_PP_QUEUE_INIT(queue1), queue2),                            \
-        WJR_PP_QUEUE_ZIP_MORE_CALLER, WJR_PP_QUEUE_SIZE(queue1))))
+        ((queue1), queue2), WJR_PP_QUEUE_ZIP_MORE_CALLER, WJR_PP_QUEUE_SIZE(queue1))))
 
 #define WJR_PP_QUEUE_ZIP_MORE_CALLER(x, y)                                               \
     WJR_PP_QUEUE_PUSH_FRONT(                                                             \
         WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_PUSH_BACK(                                   \
-            x, WJR_PP_QUEUE_INIT(                                                        \
-                   WJR_PP_QUEUE_EXPAND(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_FRONT(x))),       \
-                   WJR_PP_QUEUE_FRONT(y)))),                                             \
+            x, (WJR_PP_QUEUE_EXPAND(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_FRONT(x))),          \
+                WJR_PP_QUEUE_FRONT(y)))),                                                \
         WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(x))),                                  \
         WJR_PP_QUEUE_POP_FRONT(y)
 
+#define WJR_PP_QUEUE_ZIP(...)                                                            \
+    WJR_PP_QUEUE_ZIP_I(WJR_PP_ARGS_LEN(__VA_ARGS__), __VA_ARGS__)
+#define WJR_PP_QUEUE_ZIP_I(N, ...)                                                       \
+    WJR_PP_SWITCH(N, (1, WJR_PP_QUEUE_ZIP_I1), (2, WJR_PP_QUEUE_ZIP_I2),                 \
+                  (WJR_PP_QUEUE_ZIP_IN))                                                 \
+    (__VA_ARGS__)
+
+#define WJR_PP_QUEUE_ZIP_I1(q1) WJR_PP_QUEUE_TRANSFORM(q1, WJR_PP_WRAP)
+#define WJR_PP_WRAP(x) (x)
+#define WJR_PP_QUEUE_ZIP_I2(q1, q2) WJR_PP_QUEUE_ZIP_2(q1, q2)
+#define WJR_PP_QUEUE_ZIP_IN(q1, q2, ...)                                                 \
+    WJR_PP_QUEUE_CALL_N_SAME((WJR_PP_QUEUE_ZIP_2(q1, q2), __VA_ARGS__),                  \
+                             WJR_PP_QUEUE_ZIP_MORE, WJR_PP_ARGS_LEN(__VA_ARGS__))
+
+// switch
+// (x, F) -> WJR_PP_BOOL_IF(WJR_EQ(val, x), F, else)
+// (L, R, F) -> WJR_PP_BOOL_IF(WJR_PP_BOOL_AND(WJR_PP_GE(val, L), WJR_PP_LE(val, R)), F,
+// else) default : (F) -> F default must be the last arg
+#define WJR_PP_SWITCH(val, ...) WJR_PP_SWITCH_I(val, (__VA_ARGS__, (error)))
+
+#define WJR_PP_SWITCH_I(val, queue)                                                      \
+    WJR_PP_QUEUE_FRONT(                                                                  \
+        WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_N_SAME(              \
+            WJR_PP_QUEUE_PUSH_FRONT(                                                     \
+                WJR_PP_QUEUE_POP_FRONT(queue),                                           \
+                WJR_PP_QUEUE_PUSH_FRONT(WJR_PP_QUEUE_FRONT(queue), val)),                \
+            WJR_PP_SWITCH_CALLER, WJR_PP_DEC(WJR_PP_QUEUE_SIZE(queue))))))
+
+#define WJR_PP_SWITCH_CALLER(x, next) WJR_PP_SWITCH_ARG(next, WJR_PP_QUEUE_EXPAND(x))
+
+#define WJR_PP_SWITCH_ARG(next, ...)                                                     \
+    WJR_PP_SWITCH_ARG_I(WJR_PP_ARGS_LEN(__VA_ARGS__), next, __VA_ARGS__)
+#define WJR_PP_SWITCH_ARG_I(N, next, ...) WJR_PP_SWITCH_ARG_I_N(N, next, __VA_ARGS__)
+#define WJR_PP_SWITCH_ARG_I_N(N, next, ...) WJR_PP_SWITCH_ARG_##N(next, __VA_ARGS__)
+#define WJR_PP_SWITCH_ARG_2(next, val, F) (val, F)
+#define WJR_PP_SWITCH_ARG_3(next, val, x, F)                                             \
+    WJR_PP_BOOL_IF(WJR_PP_EQ(val, x), (val, F), WJR_PP_QUEUE_PUSH_FRONT(next, val))
+#define WJR_PP_SWITCH_ARG_4(next, val, L, R, F)                                          \
+    WJR_PP_BOOL_IF(WJR_PP_BOOL_AND(WJR_PP_GE(val, L), WJR_PP_LE(val, R)), (val, F),      \
+                   WJR_PP_QUEUE_PUSH_FRONT(next, val))
+
 // (a, b, c) -> (f(a), f(b), f(c))
 #define WJR_PP_QUEUE_TRANSFORM(queue, F)                                                 \
-    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(                                           \
-        WJR_PP_QUEUE_CALL_SAME(WJR_PP_QUEUE_PUSH_FRONT(queue, WJR_PP_QUEUE_INIT(F)),     \
-                               WJR_PP_QUEUE_TRANSFORM_CALLER)))
+    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_SAME(                    \
+        WJR_PP_QUEUE_PUSH_FRONT(queue, (F)), WJR_PP_QUEUE_TRANSFORM_CALLER)))
 #define WJR_PP_QUEUE_TRANSFORM_CALLER(x, y)                                              \
     WJR_PP_QUEUE_PUSH_BACK(x, WJR_PP_QUEUE_FRONT(x)(y))
 
 #define WJR_PP_QUEUE_TRANSFORM_ARG(queue, F, arg)                                        \
-    WJR_PP_QUEUE_POP_FRONT(                                                              \
-        WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_CALL_SAME(                \
-            WJR_PP_QUEUE_PUSH_FRONT(queue, WJR_PP_QUEUE_INIT(F, arg)),                   \
-            WJR_PP_QUEUE_TRANSFORM_ARG_CALLER))))
+    WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_POP_FRONT(WJR_PP_QUEUE_FRONT(                    \
+        WJR_PP_QUEUE_CALL_SAME(WJR_PP_QUEUE_PUSH_FRONT(queue, (F, arg)),                 \
+                               WJR_PP_QUEUE_TRANSFORM_ARG_CALLER))))
 #define WJR_PP_QUEUE_TRANSFORM_ARG_CALLER(x, y)                                          \
     WJR_PP_QUEUE_PUSH_BACK(                                                              \
         x, WJR_PP_QUEUE_FRONT(x)(WJR_PP_QUEUE_FRONT(WJR_PP_QUEUE_POP_FRONT(x)), y))
 
 // a, b, c -> ATTRIBUTE(a) ATTRIBUTE(b) ATTRIBUTE(c)
 #define WJR_ATTRIBUTES(...)                                                              \
-    WJR_PP_QUEUE_PUT(                                                                    \
-        WJR_PP_QUEUE_TRANSFORM(WJR_PP_QUEUE_INIT(__VA_ARGS__), WJR_ATTRIBUTE))
+    WJR_PP_QUEUE_PUT(WJR_PP_QUEUE_TRANSFORM((__VA_ARGS__), WJR_ATTRIBUTE))
 
-// typename header0, typename header1, typename header2, ...
-#define WJR_TYPENAMES(header, tailer)                                                    \
-    WJR_PP_QUEUE_EXPAND(WJR_PP_QUEUE_TRANSFORM_ARG(tailer, WJR_TYPENAMES_CALLER, header))
-#define WJR_TYPENAMES_CALLER(header, x) typename WJR_PP_CONCAT(header, x)
+// header0, header1, ...
+#define WJR_PP_VARS(header, tailer)                                                      \
+    WJR_PP_QUEUE_EXPAND(WJR_PP_QUEUE_TRANSFORM_ARG(tailer, WJR_PP_VARS_CALLER, header))
+#define WJR_PP_VARS_CALLER(header, x) WJR_PP_CONCAT(header, x)
+
+#define WJR_PP_VARS_N(header, N) WJR_PP_VARS(header, (WJR_PP_IOTA(N)))
+
+// example :
+// WJR_VARS_PREFIX(typename, WJR_VARS(T, (0, 1, 2))) -> typename T0, typename T1, typename
+// T2
+#define WJR_PP_VARS_PREFIX(prefix, queue)                                                \
+    WJR_PP_QUEUE_EXPAND(                                                                 \
+        WJR_PP_QUEUE_TRANSFORM_ARG(queue, WJR_PP_VARS_PREFIX_CALLER, prefix))
+#define WJR_PP_VARS_PREFIX_CALLER(prefix, x) prefix x
 
 #define WJR_DEFINE_FUNC_IMPL(is_template, template_header, template_types,               \
                              template_fowards, template_backwards, func_ret_type,        \
                              func_name, func_types, func_vars)
 
-#define WJR_DEFINE_FUNC()
+// func_header, func_types, func_vars, func_body : queue
+// for example :
+// func_header = (template <typename T> inline void foo)
+// func_types = (int)
+// func_vars = (x)
+// func_body = (noexcept { return x; })
+#define WJR_DEFINE_FUNC(func_header, func_types, func_vars, func_body)                   \
+    WJR_PP_QUEUE_EXPAND(func_header)                                                     \
+    (WJR_PP_QUEUE_EXPAND(WJR_PP_QUEUE_TRANSFORM(                                         \
+        WJR_PP_QUEUE_ZIP_2(func_types, func_vars), WJR_DEFINE_FUNC_TRAN_CALLER)))        \
+        WJR_PP_QUEUE_EXPAND(func_body)
+#define WJR_DEFINE_FUNC_TRAN_CALLER(x) WJR_DEFINE_FUNC_TRAN_CALLER_I x
+#define WJR_DEFINE_FUNC_TRAN_CALLER_I(x, y) x y
 
 // ASSERT_LEVEL : 0 ~ 3
-// 0 : Release (-DNDEBUG)
+// 0 : Release (defined(NDEBUG) && ! defined(WJR_DEBUG_LEVEL))
 // 1 : Some simple runtime checks, such as boundary checks (default)
 // 2 : Most runtime checks
 // 3 : Maximize runtime checks
-#if defined(NDEBUG)
-#define WJR_ASSERT_LEVEL 0
-#elif !defined(WJR_DEBUG_LEVEL)
-#define WJR_ASSERT_LEVEL 1
-#else
+#if defined WJR_DEBUG_LEVEL
 #define WJR_ASSERT_LEVEL WJR_DEBUG_LEVEL
+#elif defined(NDEBUG)
+#define WJR_ASSERT_LEVEL 0
+#else
+#define WJR_ASSERT_LEVEL 1
 #endif //
+
+#if defined(NDEBUG)
+#define WJR_ASSERT_IMPL(expr)                                                            \
+    abort();                                                                             \
+    WJR_UNREACHABLE
+#else
+#define WJR_ASSERT_IMPL(expr)                                                            \
+    assert(expr);                                                                        \
+    WJR_UNREACHABLE
+#endif
 
 #define WJR_ASSERT_CHECK_I_NOMESSAGE(expr)                                               \
     do {                                                                                 \
-        assert(expr);                                                                    \
+        WJR_ASSERT_IMPL(expr);                                                           \
     } while (0)
 
 #define WJR_ASSERT_CHECK_I_MESSAGE(expr, fmt, ...)                                       \
     do {                                                                                 \
         if (!WJR_UNLIKELY(expr)) {                                                       \
             fprintf(stderr, "Additional error message : " fmt "\n", ##__VA_ARGS__);      \
-            assert(expr);                                                                \
+            WJR_ASSERT_IMPL(expr);                                                       \
         }                                                                                \
     } while (0)
 
 #define WJR_ASSERT_CHECK_I(...)                                                          \
     WJR_ASSERT_CHECK_I_N(WJR_PP_ARGS_LEN(__VA_ARGS__), __VA_ARGS__)
 #define WJR_ASSERT_CHECK_I_N(N, ...)                                                     \
-    WJR_PP_BOOL_IF(WJR_PP_EQ_WITH_1(N), WJR_ASSERT_CHECK_I_NOMESSAGE,                    \
+    WJR_PP_BOOL_IF(WJR_PP_EQ(N, 1), WJR_ASSERT_CHECK_I_NOMESSAGE,                        \
                    WJR_ASSERT_CHECK_I_MESSAGE)                                           \
     (__VA_ARGS__)
 
@@ -179,98 +244,15 @@
     do {                                                                                 \
     } while (0)
 
-#define WJR_ASSERT(level, ...) WJR_ASSERT_I(level, __VA_ARGS__)
-#define WJR_ASSERT_I(level, ...) WJR_ASSERT_##level(__VA_ARGS__)
+#define WJR_ASSERT(level, ...)                                                           \
+    WJR_PP_BOOL_IF(WJR_PP_GT(WJR_ASSERT_LEVEL, level), WJR_ASSERT_CHECK_I,               \
+                   WJR_ASSERT_UNCHECK_I)                                                 \
+    (__VA_ARGS__)
 
-#define WJR_ASSERT_0(...) WJR_ASSERT_UNCHECK_I(__VA_ARGS__)
-#define WJR_ASSERT_1(...) WJR_ASSERT_UNCHECK_I(__VA_ARGS__)
-#define WJR_ASSERT_2(...) WJR_ASSERT_UNCHECK_I(__VA_ARGS__)
-#define WJR_ASSERT_3(...) WJR_ASSERT_UNCHECK_I(__VA_ARGS__)
-
-#if WJR_ASSERT_LEVEL >= 1
-#undef WJR_ASSERT_1
-#define WJR_ASSERT_1(...) WJR_ASSERT_CHECK_I(__VA_ARGS__)
-#endif //
-
-#if WJR_ASSERT_LEVEL >= 2
-#undef WJR_ASSERT_2
-#define WJR_ASSERT_2(...) WJR_ASSERT_CHECK_I(__VA_ARGS__)
-#endif //
-
-#if WJR_ASSERT_LEVEL >= 3
-#undef WJR_ASSERT_3
-#define WJR_ASSERT_3(...) WJR_ASSERT_CHECK_I(__VA_ARGS__)
-#endif //
-
-// TODO
-// IMPL
-
-#define WJR_PP_EQ_WITH_1(x) WJR_PP_EQ_WITH_1_I(x)
-#define WJR_PP_EQ_WITH_1_I(x) WJR_PP_EQ_##x
-
-#define WJR_PP_EQ_1 1
-#define WJR_PP_EQ_2 0
-#define WJR_PP_EQ_3 0
-#define WJR_PP_EQ_4 0
-#define WJR_PP_EQ_5 0
-#define WJR_PP_EQ_6 0
-#define WJR_PP_EQ_7 0
-#define WJR_PP_EQ_8 0
-#define WJR_PP_EQ_9 0
-#define WJR_PP_EQ_10 0
-#define WJR_PP_EQ_11 0
-#define WJR_PP_EQ_12 0
-#define WJR_PP_EQ_13 0
-#define WJR_PP_EQ_14 0
-#define WJR_PP_EQ_15 0
-#define WJR_PP_EQ_16 0
-#define WJR_PP_EQ_17 0
-#define WJR_PP_EQ_18 0
-#define WJR_PP_EQ_19 0
-#define WJR_PP_EQ_20 0
-#define WJR_PP_EQ_21 0
-#define WJR_PP_EQ_22 0
-#define WJR_PP_EQ_23 0
-#define WJR_PP_EQ_24 0
-#define WJR_PP_EQ_25 0
-#define WJR_PP_EQ_26 0
-#define WJR_PP_EQ_27 0
-#define WJR_PP_EQ_28 0
-#define WJR_PP_EQ_29 0
-#define WJR_PP_EQ_30 0
-#define WJR_PP_EQ_31 0
-#define WJR_PP_EQ_32 0
-#define WJR_PP_EQ_33 0
-#define WJR_PP_EQ_34 0
-#define WJR_PP_EQ_35 0
-#define WJR_PP_EQ_36 0
-#define WJR_PP_EQ_37 0
-#define WJR_PP_EQ_38 0
-#define WJR_PP_EQ_39 0
-#define WJR_PP_EQ_40 0
-#define WJR_PP_EQ_41 0
-#define WJR_PP_EQ_42 0
-#define WJR_PP_EQ_43 0
-#define WJR_PP_EQ_44 0
-#define WJR_PP_EQ_45 0
-#define WJR_PP_EQ_46 0
-#define WJR_PP_EQ_47 0
-#define WJR_PP_EQ_48 0
-#define WJR_PP_EQ_49 0
-#define WJR_PP_EQ_50 0
-#define WJR_PP_EQ_51 0
-#define WJR_PP_EQ_52 0
-#define WJR_PP_EQ_53 0
-#define WJR_PP_EQ_54 0
-#define WJR_PP_EQ_55 0
-#define WJR_PP_EQ_56 0
-#define WJR_PP_EQ_57 0
-#define WJR_PP_EQ_58 0
-#define WJR_PP_EQ_59 0
-#define WJR_PP_EQ_60 0
-#define WJR_PP_EQ_61 0
-#define WJR_PP_EQ_62 0
-#define WJR_PP_EQ_63 0
-#define WJR_PP_EQ_64 0
+#if defined(WJR_CPP_17)
+#define WJR_INLINE_CVAR inline constexpr
+#else
+#define WJR_INLINE_CVAR static constexpr
+#endif
 
 #endif // ! WJR_PREPROCESSOR_EXTEND_HPP__

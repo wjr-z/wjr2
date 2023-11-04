@@ -1,7 +1,7 @@
 #ifndef WJR_PREPROCESSOR_COMPILER_ATTRIBUTE_HPP__
 #define WJR_PREPROCESSOR_COMPILER_ATTRIBUTE_HPP__
 
-#include <wjr/preprocessor/compiler/has.hpp>
+#include <wjr/preprocessor/compiler/compiler.hpp>
 
 #if (defined(WJR_COMPILER_GCC) && WJR_HAS_GCC(10, 1, 0)) ||                    \
     (defined(WJR_COMPILER_CLANG) && WJR_HAS_CLANG(10, 0, 0)) ||                \
@@ -155,9 +155,12 @@
 
 #if defined(__cpp_lib_is_constant_evaluated)
 #define WJR_IS_CONSTANT_EVALUATED std::is_constant_evaluated()
+#undef WJR_HAS_CONSTANT_EVALUATED
+#define WJR_HAS_CONSTANT_EVALUATED 1
 #elif WJR_HAS_BUILTIN(__builtin_is_constant_evaluated) ||                      \
     WJR_HAS_GCC(9, 1, 0) || WJR_HAS_CLANG(9, 0, 0)
 #define WJR_IS_CONSTANT_EVALUATED() __builtin_is_constant_evaluated()
+#define WJR_HAS_CONSTANT_EVALUATED 1
 #else
 #define WJR_IS_CONSTANT_EVALUATED() false
 #endif
@@ -165,8 +168,12 @@
 #if WJR_HAS_BUILTIN(__builtin_constant_p) || WJR_HAS_GCC(7, 1, 0) ||           \
     WJR_HAS_CLANG(5, 0, 0)
 #define WJR_BUILTIN_CONSTANT_P(expr) __builtin_constant_p(WJR_BOOL_EXPR(expr))
+#undef WJR_HAS_CONSTANT_P
+#define WJR_HAS_CONSTANT_P 1
 #else
 #define WJR_BUILTIN_CONSTANT_P(expr) WJR_IS_CONSTANT_EVALUATED()
+#undef WJR_HAS_CONSTANT_P
+#define WJR_HAS_CONSTANT_P WJR_HAS_CONSTANT_EVALUATED
 #endif
 
 #ifdef WJR_CPP_20

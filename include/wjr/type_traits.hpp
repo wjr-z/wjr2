@@ -8,6 +8,10 @@
 
 namespace wjr {
 
+struct default_initializer_t {};
+
+WJR_INLINE_CVAR default_initializer_t default_initializer = {};
+
 template <typename... Ts>
 struct make_void {
     typedef void type;
@@ -68,8 +72,7 @@ struct multi_conditional<F, T, U> {
 
 template <typename F, typename T, typename U, typename V, typename... Args>
 struct multi_conditional<F, T, U, V, Args...> {
-    using type =
-        typename multi_conditional_impl<F::value, T, U, V, Args...>::type;
+    using type = typename multi_conditional_impl<F::value, T, U, V, Args...>::type;
 };
 
 template <typename... Args>
@@ -155,9 +158,9 @@ struct is_contiguous_iterator_impl<iter, typename iter::is_contiguous_iterator>
 
 #if defined(WJR_CPP_20)
 template <typename iter>
-struct is_contiguous_iterator
-    : bool_constant<std::contiguous_iterator<iter> ||
-                    is_contiguous_iterator_impl<iter>::value> {};
+struct is_contiguous_iterator : bool_constant<std::contiguous_iterator<iter> ||
+                                              is_contiguous_iterator_impl<iter>::value> {
+};
 #else
 template <typename iter>
 struct is_contiguous_iterator : is_contiguous_iterator_impl<iter> {};
@@ -223,12 +226,10 @@ template <size_t n, bool __s>
 using usint_t = std::conditional_t<__s, int_t<n>, uint_t<n>>;
 
 template <typename T>
-struct is_unsigned_integral
-    : conjunction<std::is_integral<T>, std::is_unsigned<T>> {};
+struct is_unsigned_integral : conjunction<std::is_integral<T>, std::is_unsigned<T>> {};
 
 template <typename T>
-struct is_signed_integral
-    : conjunction<std::is_integral<T>, std::is_signed<T>> {};
+struct is_signed_integral : conjunction<std::is_integral<T>, std::is_signed<T>> {};
 
 class __is_little_endian_helper {
     constexpr static std::uint32_t u4 = 1;

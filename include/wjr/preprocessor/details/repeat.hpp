@@ -2,7 +2,6 @@
 #define WJR_PREPROCESSOR_DETAILS_REPEAT_HPP__
 
 #define WJR_PP_REPEAT(x, n) WJR_PP_REPEAT_I(x, n)
-
 #define WJR_PP_REPEAT_I(x, n) WJR_PP_REPEAT_##n(x)
 
 #define WJR_PP_REPEAT_1(x) x

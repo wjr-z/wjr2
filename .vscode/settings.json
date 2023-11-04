@@ -71,7 +71,28 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "xutility": "cpp",
+        "xlocale": "cpp",
+        "xmemory": "cpp",
+        "bit": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "format": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "stop_token": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp"
     },
-    "cmake.sourceDirectory": "/root/wjr/src"
+    "cmake.sourceDirectory": "D:/repos/wjr2"
 }
